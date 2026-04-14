@@ -37,6 +37,19 @@ CREATE TABLE compte (
     FOREIGN KEY (id_compte_comptable) REFERENCES plan_comptable(id_compte_comptable)
 );
 
+
+
+-- 5. portefeuille
+CREATE TABLE portefeuille (
+    id_portefeuille INT PRIMARY KEY AUTO_INCREMENT,
+    id_compte INT NOT NULL,
+    id_utilisateur INT NOT NULL,
+    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    statut ENUM('GENERE','IMPRIME','ANNULE') DEFAULT 'GENERE',
+    FOREIGN KEY (id_compte) REFERENCES compte(id_compte),
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur)
+);
+
 -- 4. operation
 CREATE TABLE operation (
     id_operation INT PRIMARY KEY AUTO_INCREMENT,
@@ -51,15 +64,4 @@ CREATE TABLE operation (
     statut ENUM('EN_COURS','VALIDE','ANNULEE') DEFAULT 'EN_COURS',
     FOREIGN KEY (id_portefeuille) REFERENCES portefeuille(id_portefeuille)
 
-);
-
--- 5. portefeuille
-CREATE TABLE portefeuille (
-    id_portefeuille INT PRIMARY KEY AUTO_INCREMENT,
-    id_compte INT NOT NULL,
-    id_utilisateur INT NOT NULL,
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    statut ENUM('GENERE','IMPRIME','ANNULE') DEFAULT 'GENERE',
-    FOREIGN KEY (id_compte) REFERENCES compte(id_compte),
-    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur)
 );
