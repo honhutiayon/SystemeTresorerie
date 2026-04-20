@@ -29,7 +29,15 @@ if ($method === 'POST' && isset($input['action']) && $input['action'] === 'ajout
     $stmt = mysqli_prepare($connexion, $sql);
 
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "sssddi", $nom, $type, $numero, $solde_initial, $solde_initial, $id_comptable);
+        if ($id_comptable) {
+            $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte, solde_initial, solde_actuel, id_compte_comptable) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = mysqli_prepare($connexion, $sql);
+            mysqli_stmt_bind_param($stmt, "sssddi", $nom, $type, $numero, $solde_initial, $solde_initial, $id_comptable);
+        } else {
+            $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte, solde_initial, solde_actuel) VALUES (?, ?, ?, ?, ?)";
+            $stmt = mysqli_prepare($connexion, $sql);
+            mysqli_stmt_bind_param($stmt, "sssdd", $nom, $type, $numero, $solde_initial, $solde_initial);
+}
         if (mysqli_stmt_execute($stmt)) {
             echo json_encode(['success' => true, 'message' => 'Compte ajouté avec succès']);
         } else {
