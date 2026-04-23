@@ -1,0 +1,67 @@
+Routes — Journalisation
+=======================
+
+POST → Enregistrer une opération dans le journal
+http://localhost:8000/Controller/journalisation.php?action=logOperation
+json{
+  "id_operation": 1,
+  "id_utilisateur": 1,
+  "type_operation": "ENTREE",
+  "montant": 50000,
+  "motif": "Recette vente",
+  "id_compte_source": 1,
+  "id_compte_destination": "",
+  "solde_avant": 100000,
+  "solde_apres": 150000,
+  "statut": "VALIDE"
+}
+
+GET → Voir le journal des opérations
+http://localhost:8000/Controller/journalisation.php?action=getJournalOperations
+Filtres optionnels :
+  &date_debut=2026-01-01
+  &date_fin=2026-12-31
+  &type_operation=ENTREE
+  &id_utilisateur=1
+
+POST → Enregistrer une écriture comptable
+http://localhost:8000/Controller/journalisation.php?action=logEcritureComptable
+json{
+  "id_operation": 1,
+  "id_utilisateur": 1,
+  "id_compte_comptable_debit": 1,
+  "id_compte_comptable_credit": 2,
+  "libelle_ecriture": "Recette vente journée",
+  "montant": 50000
+}
+
+GET → Voir le journal comptable
+http://localhost:8000/Controller/journalisation.php?action=getJournalComptable
+Filtres optionnels :
+  &date_debut=2026-01-01
+  &date_fin=2026-12-31
+
+POST → Opération complète avec transaction SQL
+http://localhost:8000/Controller/journalisation.php?action=logOperationComplete
+json{
+  "operation": {
+    "id_operation": 1,
+    "id_utilisateur": 1,
+    "type_operation": "ENTREE",
+    "montant": 50000,
+    "motif": "Recette vente",
+    "id_compte_source": 1,
+    "id_compte_destination": "",
+    "solde_avant": 100000,
+    "solde_apres": 150000,
+    "statut": "VALIDE"
+  },
+  "ecriture": {
+    "id_operation": 1,
+    "id_utilisateur": 1,
+    "id_compte_comptable_debit": 1,
+    "id_compte_comptable_credit": 2,
+    "libelle_ecriture": "Recette vente journée",
+    "montant": 50000
+  }
+}
