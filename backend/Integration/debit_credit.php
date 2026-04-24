@@ -1,17 +1,28 @@
 <?php
-// Fonction pour augmenter le solde (ENTREE / DEBIT pour un compte d'actif)
-function debiterCompte($conn, $id_compte, $montant) {
+/**
+ * Fonction de DEBIT (Entrée de fonds)
+ * @param mysqli $connexion La variable de connexion
+ * @param int $id_compte L'ID du compte financier
+ * @param float $montant Le montant à ajouter
+ */
+function debiter($connexion, $id_compte, $montant) {
     $sql = "UPDATE compte SET solde_actuel = solde_actuel + ? WHERE id_compte = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $connexion->prepare($sql);
     $stmt->bind_param("di", $montant, $id_compte);
     return $stmt->execute();
 }
 
-// Fonction pour diminuer le solde (SORTIE / CREDIT pour un compte d'actif)
-function crediterCompte($conn, $id_compte, $montant) {
-    // On peut ajouter une vérification de solde ici
+/**
+ * Fonction de CREDIT (Sortie de fonds)
+ * @param mysqli $connexion La variable de connexion
+ * @param int $id_compte L'ID du compte financier
+ * @param float $montant Le montant à retirer
+ */
+function crediter($connexion, $id_compte, $montant) {
+    // Note : On pourrait ajouter une vérification ici pour empêcher 
+    // un solde négatif si nécessaire.
     $sql = "UPDATE compte SET solde_actuel = solde_actuel - ? WHERE id_compte = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $connexion->prepare($sql);
     $stmt->bind_param("di", $montant, $id_compte);
     return $stmt->execute();
 }
