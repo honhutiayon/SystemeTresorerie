@@ -1,0 +1,26 @@
+Routes — Gestion des comptes financiers
+GET → voir tous les comptes
+http://localhost:8000/Controller/gestioncompte.php
+POST → ajouter un compte
+http://localhost:8000/Controller/gestioncompte.php
+json{
+  "action": "ajouter",
+  "nom_compte": "...",
+  "type_compte": "caisse ou banque",
+  "numero_compte": "...",
+  "solde_initial": 0,
+  "id_compte_comptable": 1
+}
+PUT → modifier un compte
+http://localhost:8000/Controller/gestioncompte.php
+json{
+  "id_compte": 1,
+  "nom_compte": "...",
+  "type_compte": "...",
+  "solde_actuel": 0
+}
+DELETE → supprimer un compte
+http://localhost:8000/Controller/gestioncompte.php
+json{
+  "id_compte": 1
+}
