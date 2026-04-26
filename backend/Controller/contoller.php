@@ -1,8 +1,10 @@
 <?php 
 
-    require_once 'contoller.php';
+    session_start();
 
-    session_unset();
-    header('Location:../index.php');
+    require_once '../model/OperationDB.php';
+    
 
+    $operationdb = new OperationDB();
+    
 ?>
