@@ -1,67 +1,83 @@
 Routes — Journalisation
-=======================
 
-POST → Enregistrer une opération dans le journal
-http://localhost:8000/Controller/journalisation.php?action=logOperation
-json{
-  "id_operation": 1,
-  "id_utilisateur": 1,
-  "type_operation": "ENTREE",
-  "montant": 50000,
-  "motif": "Recette vente",
-  "id_compte_source": 1,
-  "id_compte_destination": "",
-  "solde_avant": 100000,
-  "solde_apres": 150000,
-  "statut": "VALIDE"
-}
 
-GET → Voir le journal des opérations
-http://localhost:8000/Controller/journalisation.php?action=getJournalOperations
+BASE URL : http://[IP]:80/SystemeTresorerie/backend/Controller/journalisation.php
+
+========================================
+GET → Journal des opérations financières
+GET http://172.20.10.11/SystemeTresorerie/backend/Controller/journalisation.php?action=getJournalOperations
+
+GET http://172.20.10.11/SystemeTresorerie/backend/Controller/journalisation.php?action=getJournalComptable
+========================================
+URL : ?action=getJournalOperations
+
 Filtres optionnels :
   &date_debut=2026-01-01
-  &date_fin=2026-12-31
-  &type_operation=ENTREE
+  &date_fin=2026-04-27
+  &type_operation=ENTREE   (ENTREE, SORTIE, TRANSFERT)
   &id_utilisateur=1
+  &statut=VALIDE           (EN_COURS, VALIDE, ANNULEE)
 
-POST → Enregistrer une écriture comptable
-http://localhost:8000/Controller/journalisation.php?action=logEcritureComptable
-json{
-  "id_operation": 1,
-  "id_utilisateur": 1,
-  "id_compte_comptable_debit": 1,
-  "id_compte_comptable_credit": 2,
-  "libelle_ecriture": "Recette vente journée",
-  "montant": 50000
+Réponse :
+{
+  "success": true,
+  "total": 4480,
+  "data": [
+    {
+      "id_operation": 1,
+      "reference_operation": "OP-2026-00001",
+      "type_operation": "ENTREE",
+      "montant": "50000.00",
+      "motif": "Recette vente journée",
+      "date_operation": "2026-04-27 10:00:00",
+      "statut": "VALIDE",
+      "nom": "Dupont",
+      "prenom": "Jean",
+      "role": "caissiere",
+      "nom_compte": "Caisse principale",
+      "type_compte": "caisse"
+    }
+  ]
 }
 
-GET → Voir le journal comptable
-http://localhost:8000/Controller/journalisation.php?action=getJournalComptable
+========================================
+GET → Journal comptable (écritures OHADA)
+========================================
+URL : ?action=getJournalComptable
+
 Filtres optionnels :
   &date_debut=2026-01-01
-  &date_fin=2026-12-31
+  &date_fin=2026-04-27
 
-POST → Opération complète avec transaction SQL
-http://localhost:8000/Controller/journalisation.php?action=logOperationComplete
-json{
-  "operation": {
-    "id_operation": 1,
-    "id_utilisateur": 1,
-    "type_operation": "ENTREE",
-    "montant": 50000,
-    "motif": "Recette vente",
-    "id_compte_source": 1,
-    "id_compte_destination": "",
-    "solde_avant": 100000,
-    "solde_apres": 150000,
-    "statut": "VALIDE"
-  },
-  "ecriture": {
-    "id_operation": 1,
-    "id_utilisateur": 1,
-    "id_compte_comptable_debit": 1,
-    "id_compte_comptable_credit": 2,
-    "libelle_ecriture": "Recette vente journée",
-    "montant": 50000
-  }
+Réponse :
+{
+  "success": true,
+  "total": 4480,
+  "data": [
+    {
+      "reference_operation": "OP-2026-00001",
+      "type_operation": "ENTREE",
+      "montant": "50000.00",
+      "motif": "Recette vente journée",
+      "date_operation": "2026-04-27 10:00:00",
+      "nom_compte": "Caisse principale",
+      "code_comptable": "571",
+      "libelle_compte": "Caisse siège social",
+      "solde_normal": "debit",
+      "sens_ecriture": "DEBIT",
+      "montant_debit": "50000.00",
+      "montant_credit": "0",
+      "nom": "Dupont",
+      "prenom": "Jean"
+    }
+  ]
 }
+
+========================================
+NOTES IMPORTANTES
+========================================
+- Aucune nouvelle table créée
+- Les données viennent de : operation, portefeuille,
+  utilisateur, compte, plan_comptable
+- Le sens débit/crédit est déduit automatiquement
+  depuis le type_operation et plan_comptable
