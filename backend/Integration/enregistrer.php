@@ -5,6 +5,22 @@
 //  Accepte aussi bien du JSON que du form-data
 // ============================================================
 
+
+  
+// Autorise l'origine de ton frontend (localhost)
+    header("Access-Control-Allow-Origin: *"); 
+
+    // Autorise les méthodes HTTP utilisées (GET, POST, etc.)
+    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+
+    // Autorise les headers spécifiques (très important pour l'AJAX)
+    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+    // Si c'est une requête de type OPTIONS (preflight), on arrête ici
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        exit;
+    }
+    
 require_once '../connexion/connexion.php';
 
 header('Content-Type: application/json; charset=UTF-8');
