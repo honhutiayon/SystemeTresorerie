@@ -8,6 +8,7 @@ GET → Journal des opérations financières
 GET http://172.20.10.11/SystemeTresorerie/backend/Controller/journalisation.php?action=getJournalOperations
 
 GET http://172.20.10.11/SystemeTresorerie/backend/Controller/journalisation.php?action=getJournalComptable
+POST http://172.20.10.11/SystemeTresorerie/backend/Controller/journalisation.php?action=enregistrerOperation
 ========================================
 URL : ?action=getJournalOperations
 

@@ -1,7 +1,7 @@
 <?php
 // JOURNALISATION
 //Fichier  : journalisation.php
- //Rôle     : Journal des opérations financières et journal comptable déduit depuis les tables existantes
+//Rôle     : Journal des opérations financières et journal comptable déduit depuis les tables existantes
 //tables utilisées : operation, portefeuille, utilisateur,compte, plan_comptable
 
 ini_set('display_errors', 1);
@@ -165,7 +165,150 @@ switch ($action) {
             ]
         ]);
         break;
+        
+    // transaction sql     
+    // POST ?action=enregistrerOperation
+    case 'enregistrerOperation':
+        if ($methode !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $champs = [
+            'id_portefeuille',
+            'type_operation',
+            'montant',
+            'motif',
+            'numcompte_source',
+            'statut'
+        ];
+        foreach ($champs as $champ) {
+            if (empty($input[$champ])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => "Champ manquant : $champ"]);
+                exit;
+            }
+        }
+
+        $type      = $input['type_operation'];
+        $montant   = $input['montant'];
+        $motif     = $input['motif'];
+        $id_pf     = $input['id_portefeuille'];
+        $num_src   = $input['numcompte_source'];
+        $statut    = $input['statut'];
+        $num_dest  = !empty($input['numcompte_destination'])
+            ? $input['numcompte_destination']
+            : null;
+
+        // Générer référence unique
+        $annee     = date('Y');
+        $res_count = mysqli_query(
+            $connexion,
+            "SELECT COUNT(*) as total FROM operation 
+                     WHERE YEAR(date_operation) = '$annee'"
+        );
+        $count     = mysqli_fetch_assoc($res_count)['total'];
+        $reference = 'OP-' . $annee . '-' . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+
+        // DEBUT TRANSACTION
+        mysqli_begin_transaction($connexion);
+
+        try {
+            // ETAPE 1 : Insérer l'opération
+            $stmt1 = mysqli_prepare(
+                $connexion,
+                "INSERT INTO operation
+                (reference_operation, type_operation, montant, motif,
+                 id_portefeuille, numcompte_source, numcompte_destination, statut)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+
+            mysqli_stmt_bind_param(
+                $stmt1,
+                'ssdsiiss',
+                $reference,
+                $type,
+                $montant,
+                $motif,
+                $id_pf,
+                $num_src,
+                $num_dest,
+                $statut
+            );
+
+            if (!mysqli_stmt_execute($stmt1)) {
+                throw new Exception(mysqli_error($connexion));
+            }
+            mysqli_stmt_close($stmt1);
+
+            // ETAPE 2 : Mettre à jour le solde du compte
+            // ENTREE → augmente total_entree
+            // SORTIE → augmente total_sortie
+            if ($type === 'ENTREE') {
+                $stmt2 = mysqli_prepare(
+                    $connexion,
+                    "UPDATE compte 
+                 SET total_entree = total_entree + ? 
+                 WHERE id_compte = ?"
+                );
+                mysqli_stmt_bind_param($stmt2, 'di', $montant, $num_src);
+            } elseif ($type === 'SORTIE') {
+                $stmt2 = mysqli_prepare(
+                    $connexion,
+                    "UPDATE compte 
+                 SET total_sortie = total_sortie + ? 
+                 WHERE id_compte = ?"
+                );
+                mysqli_stmt_bind_param($stmt2, 'di', $montant, $num_src);
+            } elseif ($type === 'TRANSFERT') {
+                // Débiter le compte source
+                $stmt2 = mysqli_prepare(
+                    $connexion,
+                    "UPDATE compte 
+                 SET total_sortie = total_sortie + ? 
+                 WHERE id_compte = ?"
+                );
+                mysqli_stmt_bind_param($stmt2, 'di', $montant, $num_src);
+
+                if (!mysqli_stmt_execute($stmt2)) {
+                    throw new Exception(mysqli_error($connexion));
+                }
+                mysqli_stmt_close($stmt2);
+
+                // Créditer le compte destination
+                $stmt2 = mysqli_prepare(
+                    $connexion,
+                    "UPDATE compte 
+                 SET total_entree = total_entree + ? 
+                 WHERE id_compte = ?"
+                );
+                mysqli_stmt_bind_param($stmt2, 'di', $montant, $num_dest);
+            }
+
+            if (!mysqli_stmt_execute($stmt2)) {
+                throw new Exception(mysqli_error($connexion));
+            }
+            mysqli_stmt_close($stmt2);
+
+            // TOUT REUSSI → COMMIT
+            mysqli_commit($connexion);
+
+            echo json_encode([
+                'success'   => true,
+                'reference' => $reference,
+                'message'   => 'Opération enregistrée et solde mis à jour'
+            ]);
+        } catch (Exception $e) {
+            // ERREUR → ROLLBACK
+            mysqli_rollback($connexion);
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Transaction annulée : ' . $e->getMessage()
+            ]);
+        }
+        break;
 }
 
 mysqli_close($connexion);
-?>
