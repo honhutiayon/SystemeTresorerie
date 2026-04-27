@@ -73,11 +73,3 @@ Réponse :
   ]
 }
 
-========================================
-NOTES IMPORTANTES
-========================================
-- Aucune nouvelle table créée
-- Les données viennent de : operation, portefeuille,
-  utilisateur, compte, plan_comptable
-- Le sens débit/crédit est déduit automatiquement
-  depuis le type_operation et plan_comptable

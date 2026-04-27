@@ -80,11 +80,9 @@ switch ($action) {
         ]);
         break;
 
-    // --------------------------------------------------
     // GET ?action=getJournalComptable
     // Journal comptable déduit automatiquement
     // depuis operation + compte + plan_comptable
-    // --------------------------------------------------
     case 'getJournalComptable':
         if ($methode !== 'GET') {
             http_response_code(405);
@@ -155,9 +153,7 @@ switch ($action) {
         ]);
         break;
 
-    // --------------------------------------------------
     // Action inconnue
-    // --------------------------------------------------
     default:
         http_response_code(404);
         echo json_encode([
