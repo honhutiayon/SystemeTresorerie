@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 // ============================================================
 //  GET /Integration/plan_comptes.php
 //  Retourne le plan de comptes OHADA.
@@ -20,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/../../connexion/connexion.php';
+require_once __DIR__ . '/../connexion/connexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);

@@ -13,6 +13,9 @@
 //    limite      : résultats par page (défaut 20, max 100)
 // ============================================================
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 // ⚠️ CORS en tout premier — avant tout require, echo ou espace
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
@@ -24,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/../../connexion/connexion.php';
+require_once __DIR__ . '/../connexion/connexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
