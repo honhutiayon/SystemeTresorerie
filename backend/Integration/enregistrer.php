@@ -21,7 +21,7 @@
         exit;
     }
     
-require_once '../connexion/connexion.php';
+require_once __DIR__ . '/../../connexion/connexion.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 header("Access-Control-Allow-Origin: *");

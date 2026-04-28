@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-require_once '../connexion/connexion.php';
+require_once __DIR__ . '/../../connexion/connexion.php';
 // $connexion = connexion mysqli disponible via connexion.php
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
