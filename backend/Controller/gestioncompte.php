@@ -9,15 +9,41 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input  = json_decode(file_get_contents('php://input'), true);
 
 // =============================================
-// AJOUTER un compte (POST)
+// PLANS COMPTABLES
 // =============================================
-if ($method === 'POST' && isset($input['action']) && $input['action'] === 'ajouter') {
 
-    $nom            = $input['nom_compte'] ?? '';
-    $type           = $input['type_compte'] ?? '';
-    $numero         = $input['numero_compte'] ?? '';
-    $solde_initial  = $input['solde_initial'] ?? 0;
-    $id_comptable   = $input['id_compte_comptable'] ?? null;
+// Voir tous les plans comptables
+if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'plans') {
+    $sql    = "SELECT * FROM plan_comptable";
+    $result = mysqli_query($connexion, $sql);
+    $plans  = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $plans[] = $row;
+    }
+    echo json_encode(['success' => true, 'plans_comptables' => $plans]);
+
+// =============================================
+// COMPTES
+// =============================================
+
+// Voir tous les comptes
+} elseif ($method === 'GET') {
+    $sql    = "SELECT c.*, p.libelle as plan_libelle, p.code_comptable 
+               FROM compte c 
+               LEFT JOIN plan_comptable p ON c.id_compte_comptable = p.id_compte_comptable";
+    $result = mysqli_query($connexion, $sql);
+    $comptes = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $comptes[] = $row;
+    }
+    echo json_encode(['success' => true, 'comptes' => $comptes]);
+
+// Ajouter un compte
+} elseif ($method === 'POST' && isset($input['action']) && $input['action'] === 'ajouter') {
+    $nom          = $input['nom_compte'] ?? '';
+    $type         = $input['type_compte'] ?? '';
+    $numero       = $input['numero_compte'] ?? '';
+    $id_comptable = $input['id_compte_comptable'] ?? null;
 
     if (empty($nom) || empty($type) || empty($numero)) {
         http_response_code(400);
@@ -25,56 +51,30 @@ if ($method === 'POST' && isset($input['action']) && $input['action'] === 'ajout
         exit;
     }
 
-    $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte, solde_initial, solde_actuel, id_compte_comptable) VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = mysqli_prepare($connexion, $sql);
-
-    if ($stmt) {
-        if ($id_comptable) {
-            $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte, solde_initial, solde_actuel, id_compte_comptable) VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = mysqli_prepare($connexion, $sql);
-            mysqli_stmt_bind_param($stmt, "sssddi", $nom, $type, $numero, $solde_initial, $solde_initial, $id_comptable);
-        } else {
-            $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte, solde_initial, solde_actuel) VALUES (?, ?, ?, ?, ?)";
-            $stmt = mysqli_prepare($connexion, $sql);
-            mysqli_stmt_bind_param($stmt, "sssdd", $nom, $type, $numero, $solde_initial, $solde_initial);
-}
-        if (mysqli_stmt_execute($stmt)) {
-            echo json_encode(['success' => true, 'message' => 'Compte ajouté avec succès']);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'ajout']);
-        }
-        mysqli_stmt_close($stmt);
+    if ($id_comptable) {
+        $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte, id_compte_comptable) VALUES (?, ?, ?, ?)";
+        $stmt = mysqli_prepare($connexion, $sql);
+        mysqli_stmt_bind_param($stmt, "sssi", $nom, $type, $numero, $id_comptable);
+    } else {
+        $sql  = "INSERT INTO compte (nom_compte, type_compte, numero_compte) VALUES (?, ?, ?)";
+        $stmt = mysqli_prepare($connexion, $sql);
+        mysqli_stmt_bind_param($stmt, "sss", $nom, $type, $numero);
     }
 
-// =============================================
-// VOIR tous les comptes (GET)
-// =============================================
-} elseif ($method === 'GET') {
-
-    $sql    = "SELECT * FROM compte";
-    $result = mysqli_query($connexion, $sql);
-
-    if ($result) {
-        $comptes = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $comptes[] = $row;
-        }
-        echo json_encode(['success' => true, 'comptes' => $comptes]);
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(['success' => true, 'message' => 'Compte ajouté avec succès']);
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de la récupération']);
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'ajout']);
     }
+    mysqli_stmt_close($stmt);
 
-// =============================================
-// MODIFIER un compte (PUT)
-// =============================================
+// Modifier un compte
 } elseif ($method === 'PUT') {
-
-    $id    = $input['id_compte'] ?? '';
-    $nom   = $input['nom_compte'] ?? '';
-    $type  = $input['type_compte'] ?? '';
-    $solde = $input['solde_actuel'] ?? '';
+    $id           = $input['id_compte'] ?? '';
+    $nom          = $input['nom_compte'] ?? '';
+    $type         = $input['type_compte'] ?? '';
+    $id_comptable = $input['id_compte_comptable'] ?? null;
 
     if (empty($id) || empty($nom) || empty($type)) {
         http_response_code(400);
@@ -82,25 +82,20 @@ if ($method === 'POST' && isset($input['action']) && $input['action'] === 'ajout
         exit;
     }
 
-    $sql  = "UPDATE compte SET nom_compte = ?, type_compte = ?, solde_actuel = ? WHERE id_compte = ?";
+    $sql  = "UPDATE compte SET nom_compte = ?, type_compte = ?, id_compte_comptable = ? WHERE id_compte = ?";
     $stmt = mysqli_prepare($connexion, $sql);
+    mysqli_stmt_bind_param($stmt, "ssii", $nom, $type, $id_comptable, $id);
 
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "ssdi", $nom, $type, $solde, $id);
-        if (mysqli_stmt_execute($stmt)) {
-            echo json_encode(['success' => true, 'message' => 'Compte modifié avec succès']);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de la modification']);
-        }
-        mysqli_stmt_close($stmt);
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(['success' => true, 'message' => 'Compte modifié avec succès']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de la modification']);
     }
+    mysqli_stmt_close($stmt);
 
-// =============================================
-// SUPPRIMER un compte (DELETE)
-// =============================================
+// Supprimer un compte
 } elseif ($method === 'DELETE') {
-
     $id = $input['id_compte'] ?? '';
 
     if (empty($id)) {
@@ -111,17 +106,15 @@ if ($method === 'POST' && isset($input['action']) && $input['action'] === 'ajout
 
     $sql  = "DELETE FROM compte WHERE id_compte = ?";
     $stmt = mysqli_prepare($connexion, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $id);
 
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        if (mysqli_stmt_execute($stmt)) {
-            echo json_encode(['success' => true, 'message' => 'Compte supprimé avec succès']);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression']);
-        }
-        mysqli_stmt_close($stmt);
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(['success' => true, 'message' => 'Compte supprimé avec succès']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression']);
     }
+    mysqli_stmt_close($stmt);
 
 } else {
     http_response_code(405);
