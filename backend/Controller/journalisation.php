@@ -9,6 +9,20 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 
+// Headers CORS — permettre au frontend d'accéder à l'API
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Content-Type: application/json; charset=UTF-8");
+
+// Gérer les requêtes OPTIONS (preflight)
+// Le navigateur envoie d'abord une requête OPTIONS
+// avant la vraie requête GET ou POST
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 require_once '../connexion/connexion.php';
 
 $methode = $_SERVER['REQUEST_METHOD'];
