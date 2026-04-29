@@ -30,7 +30,7 @@
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         
         // On ne sélectionne SURTOUT PAS le mot de passe (sécurité)
-        $sql = "SELECT id_utilisateur, nom, prenom, email, role, date_creation FROM utilisateur ORDER BY nom ASC";
+        $sql = "SELECT id_utilisateur, nom, prenom, email, role, date_creation FROM utilisateur ORDER BY nom ASC LIMIT 50";
         $result = mysqli_query($connexion, $sql);
 
         if ($result) {
