@@ -3,6 +3,7 @@
 //Fichier  : journalisation.php
 //Rôle     : Journal des opérations financières et journal comptable déduit depuis les tables existantes
 //tables utilisées : operation, portefeuille, utilisateur,compte, plan_comptable
+/** @var mysqli $connexion */
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -11,6 +12,7 @@ header('Content-Type: application/json');
 require_once '../connexion/connexion.php';
 
 $methode = $_SERVER['REQUEST_METHOD'];
+$input   = json_decode(file_get_contents('php://input'), true);
 $action  = $_GET['action'] ?? '';
 
 switch ($action) {
@@ -312,3 +314,4 @@ switch ($action) {
 }
 
 mysqli_close($connexion);
+?>
