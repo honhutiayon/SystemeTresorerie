@@ -1,16 +1,27 @@
 <?php
-    // Affichage des erreurs pour le développement
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
+    // 1. Configuration des en-têtes (CORS et JSON)
+    header("Access-Control-Allow-Origin: *"); 
+    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+    header('Content-Type: application/json; charset=UTF-8');
 
-    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        exit;
+    }
+
+    // 2. Importation des dépendances Composer et de la connexion
+    // Vérifie bien que le chemin vers vendor est correct par rapport à ce fichier
+    require_once __DIR__ . '/../vendor/autoload.php'; 
     require_once '../connexion/connexion.php';
 
+    use Firebase\JWT\JWT;
+
+    // CLE SECRETE : Garde cette chaîne très bien cachée (ne pas la changer après production)
+    $cle_secrete = "TA_CLE_TRES_SECRETE_123";
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // 1. Récupération des données JSON (Postman Body > raw > JSON)
-        $input = json_decode(file_get_contents('php://input'), true);
         
-        // On utilise les colonnes de TA table : 'email' et 'mot_de_passe'
+        $input = json_decode(file_get_contents('php://input'), true);
         $email = $input['email'] ?? '';
         $pass  = $input['password'] ?? '';
 
@@ -20,33 +31,44 @@
             exit;
         }
 
-        // 2. Préparation de la requête
+        // Requête pour trouver l'utilisateur
         $sql = "SELECT id_utilisateur, nom, prenom, email, mot_de_passe, role FROM utilisateur WHERE email = ?";
         $stmt = mysqli_prepare($connexion, $sql);
         
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, "s", $email);
             mysqli_stmt_execute($stmt);
-            
             $result = mysqli_stmt_get_result($stmt);
             $u = mysqli_fetch_assoc($result);
 
-            // 3. Vérification du mot de passe
+            // Vérification du mot de passe haché
             if ($u && password_verify($pass, $u['mot_de_passe'])) {
                 
-                // Mise à jour de la date de connexion (optionnel)
+                // --- GENERATION DU JWT ---
+                $temps_actuel = time();
+                $expiration = $temps_actuel + (3600 * 24); // Valide pour 24 heures
+
+                $payload = [
+                    "iat" => $temps_actuel, // Date de création
+                    "exp" => $expiration,   // Date d'expiration
+                    "data" => [             // Données utiles de l'utilisateur
+                        "id" => $u['id_utilisateur'],
+                        "email" => $u['email'],
+                        "role" => $u['role']
+                    ]
+                ];
+
+                // Signature du jeton avec l'algorithme HS256
+                $jwt = JWT::encode($payload, $cle_secrete, 'HS256');
+
+                // Mise à jour de la connexion en DB (optionnel)
                 $id_user = $u['id_utilisateur'];
                 mysqli_query($connexion, "UPDATE utilisateur SET derniere_connexion = NOW() WHERE id_utilisateur = $id_user");
-
-                // 4. Génération d'un Token "volatil"
-                // Puisque tu n'as pas de table token, on génère un identifiant unique 
-                // que le client devra renvoyer. Dans un vrai projet, on utiliserait un JWT ici.
-                $token = bin2hex(random_bytes(32));
 
                 echo json_encode([
                     'success' => true,
                     'message' => 'Connexion réussie',
-                    'token'   => $token,
+                    'token'   => $jwt, // C'est ce token que le frontend devra stocker
                     'user'    => [
                         'id'     => $u['id_utilisateur'],
                         'nom'    => $u['nom'],
@@ -56,13 +78,9 @@
                 ]);
             } else {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'Email ou mot de passe incorrect']);
+                echo json_encode(['success' => false, 'message' => 'Identifiants incorrects']);
             }
-            
             mysqli_stmt_close($stmt);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erreur technique sur le serveur']);
         }
     } else {
         http_response_code(405);
