@@ -17,7 +17,7 @@
     use Firebase\JWT\JWT;
 
     // CLE SECRETE : Garde cette chaîne très bien cachée (ne pas la changer après production)
-    $cle_secrete = "TA_CLE_TRES_SECRETE_123";
+    $cle_secrete = "zR4!pQ92#mL9vX81*kP02_qZ73@nB64$";
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
