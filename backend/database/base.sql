@@ -30,13 +30,12 @@ CREATE TABLE compte (
     nom_compte VARCHAR(100) NOT NULL,
     type_compte ENUM('caisse','banque') NOT NULL,
     numero_compte VARCHAR(20) UNIQUE NOT NULL,
-    solde_actuel DECIMAL(15,2) DEFAULT 0.00,
-    solde_initial DECIMAL(15,2) DEFAULT 0.00,
+    total_entree DECIMAL(15,2) DEFAULT 0.00,
+    total_sortie DECIMAL(15,2) DEFAULT 0.00,
     id_compte_comptable INT,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_compte_comptable) REFERENCES plan_comptable(id_compte_comptable)
 );
-
 
 
 -- 5. portefeuille
@@ -59,9 +58,8 @@ CREATE TABLE operation (
     motif VARCHAR(100),
     date_operation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     id_portefeuille INT NOT NULL,
-    id_compte_source INT NOT NULL,
-    id_compte_destination INT NULL,
+    numcompte_source INT NOT NULL,
+    numcompte_destination INT NULL,
     statut ENUM('EN_COURS','VALIDE','ANNULEE') DEFAULT 'EN_COURS',
     FOREIGN KEY (id_portefeuille) REFERENCES portefeuille(id_portefeuille)
-
 );
