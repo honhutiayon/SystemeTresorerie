@@ -25,6 +25,24 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'types') 
     ];
     echo json_encode(['success' => true, 'types_compte' => $types]);
 
+// Rechercher un compte
+} elseif ($method === 'GET' && isset($_GET['recherche'])) {
+    $recherche = "%" . $_GET['recherche'] . "%";
+    $sql = "SELECT c.*, p.libelle as plan_libelle, p.code_comptable 
+            FROM compte c 
+            LEFT JOIN plan_comptable p ON c.id_compte_comptable = p.id_compte_comptable
+            WHERE c.actif = TRUE 
+            AND (c.nom_compte LIKE ? OR c.numero_compte LIKE ? OR c.type_compte LIKE ?)";
+    $stmt = mysqli_prepare($connexion, $sql);
+    mysqli_stmt_bind_param($stmt, "sss", $recherche, $recherche, $recherche);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $comptes = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $comptes[] = $row;
+    }
+    echo json_encode(['success' => true, 'comptes' => $comptes]);
+
 // Voir tous les comptes actifs
 } elseif ($method === 'GET') {
     $sql    = "SELECT c.*, p.libelle as plan_libelle, p.code_comptable 
