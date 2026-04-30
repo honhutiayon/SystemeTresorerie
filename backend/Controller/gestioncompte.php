@@ -1,6 +1,6 @@
 <?php
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -25,11 +25,12 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'types') 
     ];
     echo json_encode(['success' => true, 'types_compte' => $types]);
 
-// Voir tous les comptes
+// Voir tous les comptes actifs
 } elseif ($method === 'GET') {
     $sql    = "SELECT c.*, p.libelle as plan_libelle, p.code_comptable 
                FROM compte c 
-               LEFT JOIN plan_comptable p ON c.id_compte_comptable = p.id_compte_comptable";
+               LEFT JOIN plan_comptable p ON c.id_compte_comptable = p.id_compte_comptable
+               WHERE c.actif = TRUE";
     $result = mysqli_query($connexion, $sql);
     $comptes = [];
     while ($row = mysqli_fetch_assoc($result)) {
@@ -68,32 +69,7 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'types') 
     }
     mysqli_stmt_close($stmt);
 
-// Modifier un compte
-} elseif ($method === 'PUT') {
-    $id           = $input['id_compte'] ?? '';
-    $nom          = $input['nom_compte'] ?? '';
-    $type         = $input['type_compte'] ?? '';
-    $id_comptable = !empty($input['id_compte_comptable']) ? (int)$input['id_compte_comptable'] : null;
-
-    if (empty($id) || empty($nom) || empty($type)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Champs obligatoires manquants']);
-        exit;
-    }
-
-    $sql  = "UPDATE compte SET nom_compte = ?, type_compte = ?, id_compte_comptable = ? WHERE id_compte = ?";
-    $stmt = mysqli_prepare($connexion, $sql);
-    mysqli_stmt_bind_param($stmt, "ssii", $nom, $type, $id_comptable, $id);
-
-    if (mysqli_stmt_execute($stmt)) {
-        echo json_encode(['success' => true, 'message' => 'Compte modifié avec succès']);
-    } else {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de la modification']);
-    }
-    mysqli_stmt_close($stmt);
-
-// Supprimer un compte
+// Désactiver un compte
 } elseif ($method === 'DELETE') {
     $id = $input['id_compte'] ?? '';
 
@@ -103,15 +79,15 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'types') 
         exit;
     }
 
-    $sql  = "DELETE FROM compte WHERE id_compte = ?";
+    $sql  = "UPDATE compte SET actif = FALSE WHERE id_compte = ?";
     $stmt = mysqli_prepare($connexion, $sql);
     mysqli_stmt_bind_param($stmt, "i", $id);
 
     if (mysqli_stmt_execute($stmt)) {
-        echo json_encode(['success' => true, 'message' => 'Compte supprimé avec succès']);
+        echo json_encode(['success' => true, 'message' => 'Compte désactivé avec succès']);
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression']);
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de la désactivation']);
     }
     mysqli_stmt_close($stmt);
 
