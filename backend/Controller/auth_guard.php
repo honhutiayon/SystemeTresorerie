@@ -11,7 +11,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 function verifierAcces() {
-    $cle_secrete = "kZ8!pQ92#mL9vX81*kP02_qZ73@nB64$"; 
+    $cle_secrete = "zR4!pQ92#mL9vX81*kP02_qZ73@nB64$"; 
     $authHeader = null;
 
     // Méthode ultra-robuste pour récupérer le Header Authorization

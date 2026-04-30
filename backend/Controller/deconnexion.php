@@ -1,18 +1,14 @@
 <?php
 
-    session_start();
-
-    // 2. Vider toutes les valeurs de la session (dont 'id_utilisateur')
-    $_SESSION = array();
-
-    // 4. Détruire la session sur le serveur
-    session_destroy();
-
-    // 5. Réponse JSON pour confirmer la sortie
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
     header('Content-Type: application/json');
+
+    // On ne fait RIEN sur le serveur, on envoie juste un signal de succès
     echo json_encode([
         "success" => true,
-        "message" => "Utilisateur deconnecte avec succes."
+        "message" => "Déconnexion réussie. Pensez à supprimer le token côté client."
     ]);
 
 ?>

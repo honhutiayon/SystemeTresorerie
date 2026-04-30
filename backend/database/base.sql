@@ -63,5 +63,4 @@ CREATE TABLE operation (
     id_compte_destination INT NULL,
     statut ENUM('EN_COURS','VALIDE','ANNULEE') DEFAULT 'EN_COURS',
     FOREIGN KEY (id_portefeuille) REFERENCES portefeuille(id_portefeuille)
-
 );
