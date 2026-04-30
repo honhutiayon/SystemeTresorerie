@@ -19,6 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+   //Verification du Token
+
+require_once 'auth_guard.php';
+
+$userData = verifierAcces();
+    // Tu peux maintenant utiliser l'ID de l'utilisation connecte
+$id_connecte = $userData->id;
+
 require_once __DIR__ . '/../connexion/connexion.php';
 
 $reponse = ['status' => 'error', 'message' => ''];

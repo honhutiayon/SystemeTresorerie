@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+
 require_once __DIR__ . '/../connexion/connexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
