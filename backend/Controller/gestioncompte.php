@@ -17,23 +17,13 @@ require_once '../connexion/connexion.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = json_decode(file_get_contents('php://input'), true);
 
-// =============================================
-// PLANS COMPTABLES
-// =============================================
-
-// Voir tous les plans comptables
-if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'plans') {
-    $sql    = "SELECT * FROM plan_comptable";
-    $result = mysqli_query($connexion, $sql);
-    $plans  = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $plans[] = $row;
-    }
-    echo json_encode(['success' => true, 'plans_comptables' => $plans]);
-
-// =============================================
-// COMPTES
-// =============================================
+// Voir les types de compte
+if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'types') {
+    $types = [
+        ['valeur' => 'caisse', 'libelle' => 'Caisse'],
+        ['valeur' => 'banque', 'libelle' => 'Banque']
+    ];
+    echo json_encode(['success' => true, 'types_compte' => $types]);
 
 // Voir tous les comptes
 } elseif ($method === 'GET') {
@@ -52,7 +42,7 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'plans') 
     $nom          = $input['nom_compte'] ?? '';
     $type         = $input['type_compte'] ?? '';
     $numero       = $input['numero_compte'] ?? '';
-    $id_comptable = $input['id_compte_comptable'] ?? null;
+    $id_comptable = !empty($input['id_compte_comptable']) ? (int)$input['id_compte_comptable'] : null;
 
     if (empty($nom) || empty($type) || empty($numero)) {
         http_response_code(400);
@@ -83,7 +73,7 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'plans') 
     $id           = $input['id_compte'] ?? '';
     $nom          = $input['nom_compte'] ?? '';
     $type         = $input['type_compte'] ?? '';
-    $id_comptable = $input['id_compte_comptable'] ?? null;
+    $id_comptable = !empty($input['id_compte_comptable']) ? (int)$input['id_compte_comptable'] : null;
 
     if (empty($id) || empty($nom) || empty($type)) {
         http_response_code(400);
