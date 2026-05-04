@@ -24,3 +24,21 @@ http://localhost:8000/Controller/gestioncompte.php
 json{
   "id_compte": 1
 }
+
+
+
+mes route 
+GET → voir tous les operations 
+http://localhost/SystemeTresorerie/backend/operations/list
+
+POST → ajouter une opeartion
+http://localhost/SystemeTresorerie/backend/operations/create
+
+GET → voir le solde d un compte
+ http://localhost/SystemeTresorerie/backend/operations/solde/{id_compte}
+
+POST → modifier le status d une operation
+http://localhost/SystemeTresorerie/backend/operations/status
+
+
+

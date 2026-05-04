@@ -2,9 +2,7 @@
 
     session_start();
 
-    require_once '../model/OperationDB.php';
-    
-
+    require_once __DIR__ . '/../model/OperationDB.php';
     $operationdb = new OperationDB();
     
 ?>

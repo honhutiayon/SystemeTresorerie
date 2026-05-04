@@ -1,8 +1,4 @@
 <?php
-require_once'auth_guard.php';
-// verification du token
-//on recupere les infos de l utilisateur connecte(id, role, etc)
-$userData= verifierAcces();
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -62,10 +58,8 @@ switch ($action) {
         $montant = (float) ($input['montant'] ?? 0);
         $motif = trim($input['motif'] ?? '');
         $id_portefeuille = (int) ($input['id_portefeuille'] ?? 0);
-        //$numcompte_source = (int) ($input['numcompte_source'] ?? 0);
-        //$numcompte_destination = !empty($input['numcompte_destination']) ? (int) $input['numcompte_destination'] : null;
-        $numcompte_source = trim($input['numcompte_source'] ?? '');  // Traité comme une chaîne
-        $numcompte_destination = !empty($input['numcompte_destination']) ? trim($input['numcompte_destination']) : null;
+        $numcompte_source = (int) ($input['numcompte_source'] ?? 0);
+        $numcompte_destination = !empty($input['numcompte_destination']) ? (int) $input['numcompte_destination'] : null;
 
         $types_valides = ['ENTREE', 'SORTIE', 'TRANSFERT'];
 
@@ -152,127 +146,6 @@ switch ($action) {
 
         break;
 
-        // =========================
-// UPDATE OPERATION
-// =========================
-case 'update':
-    // Récupération des données envoyées en POST
-    $input = json_decode(file_get_contents("php://input"), true);
-
-    if (!$input) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "JSON invalide"
-        ]);
-        exit;
-    }
-
-    // Récupération des paramètres d'entrée
-    $id_operation = (int)($input['id_operation'] ?? 0);
-    $type_operation = strtoupper(trim($input['type_operation'] ?? ''));
-    $montant = (float)($input['montant'] ?? 0);
-    $motif = trim($input['motif'] ?? '');
-    $id_portefeuille = (int)($input['id_portefeuille'] ?? 0);
-    $numcompte_source = ($input['numcompte_source'] ?? 0);
-    $numcompte_destination = !empty($input['numcompte_destination']) ? $input['numcompte_destination'] : null;
-    $statut = strtoupper(trim($input['statut'] ?? 'EN_COURS'));
-
-    // Validation du type d'opération
-    $types_valides = ['ENTREE', 'SORTIE', 'TRANSFERT'];
-    if (!in_array($type_operation, $types_valides)) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Type d'opération invalide"
-        ]);
-        exit;
-    }
-
-    // Vérification des champs obligatoires
-    if ($montant <= 0 || $id_portefeuille <= 0 || $numcompte_source <= 0) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Champs invalides"
-        ]);
-        exit;
-    }
-
-    // Vérifier que le compte source existe
-    if (!$operationdb->compteExiste($numcompte_source)) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Compte source invalide"
-        ]);
-        exit;
-    }
-
-    // Si c'est un transfert, vérifier le compte destination
-    if ($type_operation === 'TRANSFERT') {
-        if (!$numcompte_destination || !$operationdb->compteExiste($numcompte_destination)) {
-            echo json_encode([
-                "status" => "error",
-                "message" => "Compte destination invalide"
-            ]);
-            exit;
-        }
-        if ($numcompte_source === $numcompte_destination) {
-            echo json_encode([
-                "status" => "error",
-                "message" => "Comptes identiques interdits"
-            ]);
-            exit;
-        }
-    }
-
-    // Vérification si l'opération existe avant de la modifier
-    $operation = $operationdb->read($id_operation);
-    if (!$operation) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Opération introuvable"
-        ]);
-        exit;
-    }
-
-    try {
-        // Commencer la transaction
-        $operationdb->beginTransaction();
-
-        // Mise à jour de l'opération dans la base de données
-        $result = $operationdb->update(
-            $id_operation,
-            $type_operation,
-            $montant,
-            $motif,
-            $id_portefeuille,
-            $numcompte_source,
-            $numcompte_destination,
-            $statut
-        );
-
-        // Vérification du résultat de l'update
-        if (!$result) {
-            throw new Exception("Erreur lors de la mise à jour de l'opération");
-        }
-
-        // Commit de la transaction
-        $operationdb->commit();
-
-        echo json_encode([
-            "status" => "success",
-            "message" => "Opération mise à jour avec succès",
-            "id_operation" => $id_operation
-        ]);
-    } catch (Exception $e) {
-        // Rollback si une erreur survient
-        $operationdb->rollBack();
-        echo json_encode([
-            "status" => "error",
-            "message" => $e->getMessage()
-        ]);
-    }
-
-    break;
-
     // =========================
     // LIST
     // =========================
@@ -308,36 +181,6 @@ case 'update':
         }
 
         break;
-
-     case 'getreference':
-    // Vérification si la référence est présente dans l'URL
-    $reference = $_GET['reference'] ?? null;
-    
-    if (!$reference) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Référence non fournie"
-        ]);
-        break;
-    }
-
-    // Recherche de l'opération par référence
-    $operation = $operationdb->readReference($reference);
-
-    // Vérification si l'opération a été trouvée
-    if (!$operation) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Opération introuvable"
-        ]);
-    } else {
-        echo json_encode([
-            "status" => "success",
-            "data" => $operation
-        ]);
-    }
-
-    break;
 
     // =========================
     // SOLDE
@@ -483,85 +326,6 @@ case 'update':
         }
 
         break;
-
-
-        
-
-        // =========================
-// DELETE OPERATION BY REFERENCE
-// =========================
-case 'deleteReference':
-
-    $reference = $_GET['reference'] ?? null;
-
-    if (empty($reference)) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Référence de l'opération manquante"
-        ]);
-        break;
-    }
-
-    $operation = $operationdb->readReference($reference);
-
-    if (!$operation) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Opération introuvable pour la référence : " . $reference
-        ]);
-        break;
-    }
-
-    try {
-
-        $result = $operationdb->deleteByReference($reference);
-
-        echo json_encode([
-            "status" => $result ? "success" : "error",
-            "message" => $result 
-                ? "Opération supprimée avec succès"
-                : "Erreur lors de la suppression"
-        ]);
-
-    } catch (Exception $e) {
-        echo json_encode([
-            "status" => "error",
-            "message" => $e->getMessage()
-        ]);
-    }
-
-    break;
-
-
-
-    // Assumons que tu as une méthode dans ton controller pour récupérer l'ID du compte par son numéro
-$numcompte_source = $input['numcompte_source'] ?? null;
-
-// Vérifie si le numéro de compte est valide
-if ($numcompte_source) {
-    // Recherche de l'ID du compte via le numéro de compte
-    $compte = $operationdb->getCompteByNumero($numcompte_source);
-    
-    if (!$compte) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Compte introuvable pour le numéro: " . $numcompte_source
-        ]);
-        exit;
-    }
-
-    // Maintenant, utilise l'ID du compte pour la création
-    $id_compte = $compte['id_compte'];  // L'ID du compte est retourné ici
-} else {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Numéro de compte manquant"
-    ]);
-    exit;
-}
-
-// Continue la logique pour insérer l'opération...
-$operationdb->create($reference_operation, $type_operation, $montant, $motif, $id_portefeuille, $id_compte, $numcompte_destination, 'EN_COURS');
 
     // =========================
     // DEFAULT
