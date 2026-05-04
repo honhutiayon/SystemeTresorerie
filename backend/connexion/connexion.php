@@ -1,6 +1,6 @@
 <?php
 
-    $connexion = mysqli_connect("localhost", "root", "Faraday08", "tresorerie");
+    $connexion = mysqli_connect("localhost", "root", "", "");
     if (!$connexion) {
         die("Échec de la connexion : " . mysqli_connect_error());
     }
