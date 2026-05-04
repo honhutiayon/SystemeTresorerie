@@ -25,7 +25,7 @@
         $sql = "SELECT p.id_portefeuille, p.id_compte, p.id_utilisateur, p.date_creation, p.statut, c.nom_compte 
                 FROM portefeuille p
                 LEFT JOIN compte c ON p.id_compte = c.id_compte
-                ORDER BY p.id_portefeuille DESC LIMIT 10";
+                ORDER BY p.id_portefeuille DESC LIMIT 50";
         
         $result = mysqli_query($connexion, $sql);
 

@@ -1,4 +1,3 @@
-
 create database tresorerie;
 use tresorerie;
 
@@ -64,3 +63,4 @@ CREATE TABLE operation (
     statut ENUM('EN_COURS','VALIDE','ANNULEE') DEFAULT 'EN_COURS',
     FOREIGN KEY (id_portefeuille) REFERENCES portefeuille(id_portefeuille)
 );
+
