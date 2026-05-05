@@ -11,6 +11,7 @@
 
     // 2. Importation des dépendances Composer et de la connexion
     // Vérifie bien que le chemin vers vendor est correct par rapport à ce fichier
+<<<<<<< HEAD
     require_once __DIR__ . '/../vendor/autoload.php'; 
     require_once '../connexion/connexion.php';
 
@@ -18,6 +19,18 @@
 
     // CLE SECRETE : Garde cette chaîne très bien cachée (ne pas la changer après production)
     $cle_secrete = "zR4!pQ92#mL9vX81*kP02_qZ73@nB64$";
+=======
+    require_once __DIR__ . '/../vendor/autoload.php';
+    require_once '../connexion/connexion.php';
+
+    ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+    use Firebase\JWT\JWT;
+
+    // CLE SECRETE : Garde cette chaîne très bien cachée (ne pas la changer après production)
+    $cle_secrete = "kZ8!pQ92#mL9vX81*kP02_qZ73@nB64$";
+>>>>>>> main
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
