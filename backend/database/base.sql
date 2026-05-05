@@ -33,6 +33,7 @@ CREATE TABLE compte (
     total_entree DECIMAL(15,2) DEFAULT 0.00,
     total_sortie DECIMAL(15,2) DEFAULT 0.00,
     id_compte_comptable INT,
+    actif BOOLEAN DEFAULT TRUE,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_compte_comptable) REFERENCES plan_comptable(id_compte_comptable)
 );
