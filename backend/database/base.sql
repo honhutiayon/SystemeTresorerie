@@ -1,4 +1,3 @@
-
 create database tresorerie;
 use tresorerie;
 
